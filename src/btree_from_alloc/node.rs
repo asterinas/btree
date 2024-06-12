@@ -82,7 +82,7 @@ impl<K, V> LeafNode<K, V> {
     /// Creates a new boxed `LeafNode`.
     fn new<A: Allocator + Clone>(alloc: A) -> Box<Self, A> {
         unsafe {
-            let mut leaf = Box::new_uninit_in(alloc);
+            let mut leaf = Box::try_new_uninit_in(alloc).unwrap();
             LeafNode::init(leaf.as_mut_ptr());
             leaf.assume_init()
         }
@@ -114,7 +114,7 @@ impl<K, V> InternalNode<K, V> {
     /// such an edge.
     unsafe fn new<A: Allocator + Clone>(alloc: A) -> Box<Self, A> {
         unsafe {
-            let mut node = Box::<Self, _>::new_uninit_in(alloc);
+            let mut node = Box::<Self, _>::try_new_uninit_in(alloc).unwrap();
             // We only need to initialize the data; the edges are MaybeUninit.
             LeafNode::init(ptr::addr_of_mut!((*node.as_mut_ptr()).data));
             node.assume_init()

@@ -7,10 +7,7 @@ use core::iter::{FusedIterator, Peekable};
 use core::mem::ManuallyDrop;
 use core::ops::{BitAnd, BitOr, BitXor, RangeBounds, Sub};
 
-use alloc::{
-    alloc::{Allocator, Global},
-    vec::Vec,
-};
+use alloc::alloc::{Allocator, Global};
 
 use super::map::{BTreeMap, Keys};
 use super::merge_iter::MergeIterInner;
@@ -1165,19 +1162,19 @@ impl<T, A: Allocator + Clone> BTreeSet<T, A> {
     }
 }
 
-impl<T: Ord> FromIterator<T> for BTreeSet<T> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> BTreeSet<T> {
-        let mut inputs: Vec<_> = iter.into_iter().collect();
-
-        if inputs.is_empty() {
-            return BTreeSet::new();
-        }
-
-        // use stable sort to preserve the insertion order.
-        inputs.sort();
-        BTreeSet::from_sorted_iter(inputs.into_iter(), Global)
-    }
-}
+// impl<T: Ord> FromIterator<T> for BTreeSet<T> {
+//     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> BTreeSet<T> {
+//         let mut inputs: Vec<_> = iter.into_iter().collect();
+//
+//         if inputs.is_empty() {
+//             return BTreeSet::new();
+//         }
+//
+//         // use stable sort to preserve the insertion order.
+//         inputs.sort();
+//         BTreeSet::from_sorted_iter(inputs.into_iter(), Global)
+//     }
+// }
 
 impl<T: Ord, A: Allocator + Clone> BTreeSet<T, A> {
     fn from_sorted_iter<I: Iterator<Item = T>>(iter: I, alloc: A) -> BTreeSet<T, A> {
@@ -1187,28 +1184,28 @@ impl<T: Ord, A: Allocator + Clone> BTreeSet<T, A> {
     }
 }
 
-impl<T: Ord, const N: usize> From<[T; N]> for BTreeSet<T> {
-    /// Converts a `[T; N]` into a `BTreeSet<T>`.
-    ///
-    /// ```
-    /// use std::collections::BTreeSet;
-    ///
-    /// let set1 = BTreeSet::from([1, 2, 3, 4]);
-    /// let set2: BTreeSet<_> = [1, 2, 3, 4].into();
-    /// assert_eq!(set1, set2);
-    /// ```
-    fn from(mut arr: [T; N]) -> Self {
-        if N == 0 {
-            return BTreeSet::new();
-        }
-
-        // use stable sort to preserve the insertion order.
-        arr.sort();
-        let iter = IntoIterator::into_iter(arr).map(|k| (k, SetValZST::default()));
-        let map = BTreeMap::bulk_build_from_sorted_iter(iter, Global);
-        BTreeSet { map }
-    }
-}
+// impl<T: Ord, const N: usize> From<[T; N]> for BTreeSet<T> {
+//     /// Converts a `[T; N]` into a `BTreeSet<T>`.
+//     ///
+//     /// ```
+//     /// use std::collections::BTreeSet;
+//     ///
+//     /// let set1 = BTreeSet::from([1, 2, 3, 4]);
+//     /// let set2: BTreeSet<_> = [1, 2, 3, 4].into();
+//     /// assert_eq!(set1, set2);
+//     /// ```
+//     fn from(mut arr: [T; N]) -> Self {
+//         if N == 0 {
+//             return BTreeSet::new();
+//         }
+//
+//         // use stable sort to preserve the insertion order.
+//         arr.sort();
+//         let iter = IntoIterator::into_iter(arr).map(|k| (k, SetValZST::default()));
+//         let map = BTreeMap::bulk_build_from_sorted_iter(iter, Global);
+//         BTreeSet { map }
+//     }
+// }
 
 impl<T, A: Allocator + Clone> IntoIterator for BTreeSet<T, A> {
     type Item = T;

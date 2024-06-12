@@ -8,10 +8,7 @@ use core::mem::{self, ManuallyDrop};
 use core::ops::{Bound, Index, RangeBounds};
 use core::ptr;
 
-use alloc::{
-    alloc::{Allocator, Global},
-    vec::Vec,
-};
+use alloc::alloc::{Allocator, Global};
 
 use super::borrow::DormantMutRef;
 use super::dedup_sorted_iter::DedupSortedIter;
@@ -2219,19 +2216,19 @@ impl<'a, K, V> DoubleEndedIterator for RangeMut<'a, K, V> {
 
 impl<K, V> FusedIterator for RangeMut<'_, K, V> {}
 
-impl<K: Ord, V> FromIterator<(K, V)> for BTreeMap<K, V> {
-    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> BTreeMap<K, V> {
-        let mut inputs: Vec<_> = iter.into_iter().collect();
-
-        if inputs.is_empty() {
-            return BTreeMap::new();
-        }
-
-        // use stable sort to preserve the insertion order.
-        inputs.sort_by(|a, b| a.0.cmp(&b.0));
-        BTreeMap::bulk_build_from_sorted_iter(inputs, Global)
-    }
-}
+// impl<K: Ord, V> FromIterator<(K, V)> for BTreeMap<K, V> {
+//     fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> BTreeMap<K, V> {
+//         let mut inputs: Vec<_> = iter.into_iter().collect();
+//
+//         if inputs.is_empty() {
+//             return BTreeMap::new();
+//         }
+//
+//         // use stable sort to preserve the insertion order.
+//         inputs.sort_by(|a, b| a.0.cmp(&b.0));
+//         BTreeMap::bulk_build_from_sorted_iter(inputs, Global)
+//     }
+// }
 
 impl<K: Ord, V, A: Allocator + Clone> Extend<(K, V)> for BTreeMap<K, V, A> {
     #[inline]
@@ -2322,26 +2319,26 @@ where
     }
 }
 
-impl<K: Ord, V, const N: usize> From<[(K, V); N]> for BTreeMap<K, V> {
-    /// Converts a `[(K, V); N]` into a `BTreeMap<(K, V)>`.
-    ///
-    /// ```
-    /// use std::collections::BTreeMap;
-    ///
-    /// let map1 = BTreeMap::from([(1, 2), (3, 4)]);
-    /// let map2: BTreeMap<_, _> = [(1, 2), (3, 4)].into();
-    /// assert_eq!(map1, map2);
-    /// ```
-    fn from(mut arr: [(K, V); N]) -> Self {
-        if N == 0 {
-            return BTreeMap::new();
-        }
-
-        // use stable sort to preserve the insertion order.
-        arr.sort_by(|a, b| a.0.cmp(&b.0));
-        BTreeMap::bulk_build_from_sorted_iter(arr, Global)
-    }
-}
+// impl<K: Ord, V, const N: usize> From<[(K, V); N]> for BTreeMap<K, V> {
+//     /// Converts a `[(K, V); N]` into a `BTreeMap<(K, V)>`.
+//     ///
+//     /// ```
+//     /// use std::collections::BTreeMap;
+//     ///
+//     /// let map1 = BTreeMap::from([(1, 2), (3, 4)]);
+//     /// let map2: BTreeMap<_, _> = [(1, 2), (3, 4)].into();
+//     /// assert_eq!(map1, map2);
+//     /// ```
+//     fn from(mut arr: [(K, V); N]) -> Self {
+//         if N == 0 {
+//             return BTreeMap::new();
+//         }
+//
+//         // use stable sort to preserve the insertion order.
+//         arr.sort_by(|a, b| a.0.cmp(&b.0));
+//         BTreeMap::bulk_build_from_sorted_iter(arr, Global)
+//     }
+// }
 
 impl<K, V, A: Allocator + Clone> BTreeMap<K, V, A> {
     /// Gets an iterator over the entries of the map, sorted by key.
